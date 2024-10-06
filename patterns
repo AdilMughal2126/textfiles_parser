@@ -1,0 +1,20 @@
+ # pattern = re.compile(
+            #     # (1) Date (MM/DD/YY) - optional
+            #     r'(\d{2}/\d{2}/\d{2})?\s+'
+            #     # (2) Transaction number - optional
+            #     r'(\d+)?\s*'
+            #     # (3) Optional new field - optional (at least two spaces)
+            #     r'(\S+)?\s{2,}'
+            #     # (4) Item number (required)
+            #     r'(\d+)\s+'
+            #     # (5) GL Reference (required)
+            #     r'(\S+)\s+'
+            #     # (6) Description (number @ number)
+            #     r'(-?[\d,]+\.\d+\s+@\s+-?[\d,]+\.\d+)\s+'
+            #     # (7) DR Account (required)
+            #     r'(\d+)\s*'
+            #     # (8) Optional Sub-Acct (optional)
+            #     r'(\d{3})?\s*'
+            #     # (9) DR Amount (required)
+            #     r'(-?[\d,]+\.\d+)'
+            # )
