@@ -39,35 +39,33 @@ def process_files(inputfile):
                 continue
 
             pattern = re.compile(
-                r'(\d{2}/\d{2}/\d{2})\s+'                  # Date (MM/DD/YY)
-                # Transaction number
-                r'(\d+)\s+'
-                r'(\d+)\s+'                                 # Item number
-                r'(\S+)\s+'                                 # GL Reference
-                # Description (handles commas in numbers)
+                r'(\d{2}/\d{2}/\d{2})\s+'            # Date (MM/DD/YY)
+                r'(\d+)\s+'                           # Transaction number
+                # Optional third column (e.g., 'L115084') - can be None
+                r'(\S+)?\s+'
+                r'(\d+)\s+'                           # Item number
+                r'(\S+)\s+'                           # GL Reference
+                # Quantity @ Rate (with possible negatives)
                 r'(-?[\d,]+\.\d+\s+@\s+-?[\d,]+\.\d+)\s+'
-                r'(\d+)\s+'                                 # DR Account
-                # DR Amount (handles commas)
+                r'(\d+)\s+'                           # DR Account
+                r'(\d+)?\s+'
+                # Amount (with possible negatives and commas)
                 r'(-?[\d,]+\.\d+)'
             )
 
             match = pattern.search(line1)
-            if match:
-                date, transaction_number, enty, gl_ref, description1, dr_acct, dr_amount = match.groups()
-                combined_data.extend(match.groups())
-                print(match.groups())
 
-            # pattern2 = re.compile(
-            #     '(\w{3}-\w{2})\s+(\d+)\s+(.*?)\s+(\d+)\s+(-\d+\.\d+)')
+            if match:
+                combined_data.extend(match.groups())
+
             pattern2 = re.compile(
-                r'(\w{3}-\w{2})\s+(\S+)\s+(.+?)\s+(\d+)\s+(-?\d{1,3}(?:,\d{3})*(?:\.\d{2})?)'
+                r'(\w+-\w+)\s+(\S+)\s+(.*?)?\s+(\d+)\s+(-?\d+,?\d*\.\d+)'
             )
 
             match2 = pattern2.search(line2)
+
             if match2:
-                iss, order_item, description2, cr_acct, cr_amount = match2.groups()
                 combined_data.extend(match2.groups())
-                print(match2.groups())
 
             pattern3 = re.compile(
                 '(\d+)\s+(\S+)\s+(-?[\d,]+\.\d+\s+@\s+-?[\d,]+\.\d+)\s+(\d+)\s+(\d+)\s+(-?[\d,]+\.\d+)')
@@ -93,11 +91,36 @@ def process_files(inputfile):
 
             if match and match2 and combined_data:
                 if match3 and match4:
-                    data.append(combined_data)
+                    line5 = file.readline().strip()
+                    match5 = pattern3.search(line5)
+
+                    if match5:
+                        combined_data.extend(match5.groups())
+
+                        line6 = file.readline().strip()
+                        match6 = pattern4.search(line6)
+
+                        if match6:
+                            combined_data.extend(match6.groups())
+
+                        data.append(combined_data)
+                        combined_data = []
+                    else:
+                        temp = line5
+                        data.append(combined_data)
+
                 else:
                     data.append(combined_data)
                 combined_data = []
             else:
+                if match:
+                    try:
+                        print(match.groups())
+                        print(match2.groups())
+                    except Exception as e:
+                        print('Exception in finally bloack: ', e)
+                    if match2:
+                        print(match2.groups())
                 combined_data = []
 
     # Create a pandas DataFrame and write to CSV
@@ -124,3 +147,4 @@ def parse_files():
 
 
 parse_files()
+# process_files('Sept 2024_MW.txt')
